@@ -19,10 +19,10 @@
 #include "Memory.h"
 
 #include <CpuExecutor.h>
-#include <ExecutionBurstController.h>
 #include <LegacyUtils.h>
 #include <android-base/scopeguard.h>
 #include <android/hardware_buffer.h>
+#include <nnapi/IBurst.h>
 #include <nnapi/SharedMemory.h>
 #include <nnapi/TypeUtils.h>
 #include <nnapi/Types.h>
@@ -192,16 +192,6 @@ RuntimeMemory::RuntimeMemory(SharedMemory memory, std::unique_ptr<MemoryValidato
 
 RuntimeMemory::RuntimeMemory(SharedBuffer buffer) : kBuffer(std::move(buffer)) {}
 
-RuntimeMemory::~RuntimeMemory() {
-#ifndef NN_NO_BURST
-    for (const auto& [ptr, weakBurst] : mUsedBy) {
-        if (const std::shared_ptr<ExecutionBurstController> burst = weakBurst.lock()) {
-            burst->freeMemory(getKey());
-        }
-    }
-#endif  // NN_NO_BURST
-}
-
 Request::MemoryPool RuntimeMemory::getMemoryPool() const {
     if (kBuffer != nullptr) {
         return kBuffer->getToken();
@@ -218,13 +208,11 @@ std::optional<RunTimePoolInfo> RuntimeMemory::getRunTimePoolInfo() const {
     return mCachedRunTimePoolInfo;
 }
 
-intptr_t RuntimeMemory::getKey() const {
-    return reinterpret_cast<intptr_t>(this);
-}
-
-void RuntimeMemory::usedBy(const std::shared_ptr<ExecutionBurstController>& burst) const {
-    std::lock_guard<std::mutex> guard(mMutex);
-    mUsedBy.emplace(burst.get(), burst);
+void RuntimeMemory::hold(const IBurst::OptionalCacheHold& cacheHold) const {
+    if (cacheHold != nullptr) {
+        std::lock_guard<std::mutex> guard(mMutex);
+        mHold.insert(cacheHold);
+    }
 }
 
 static int copyHidlMemories(const std::optional<RunTimePoolInfo>& src,
@@ -319,7 +307,7 @@ bool MemoryBuilder::badState(const char* name) const {
 }
 
 int MemoryBuilder::addRole(const CompilationBuilder& compilation, IOType ioType, uint32_t index,
-                           float freq) {
+                           float prob) {
     const char* tag = ioType == IOType::INPUT ? "addInputRole" : "addOutputRole";
     if (badState(tag)) {
         return ANEURALNETWORKS_BAD_STATE;
@@ -379,15 +367,15 @@ int MemoryBuilder::addRole(const CompilationBuilder& compilation, IOType ioType,
         return ANEURALNETWORKS_BAD_DATA;
     }
 
-    if (freq > 1.0f || freq <= 0.0f) {
-        LOG(ERROR) << "ANeuralNetworksMemoryDesc_" << tag << " -- invalid frequency " << freq;
+    if (prob > 1.0f || prob <= 0.0f) {
+        LOG(ERROR) << "ANeuralNetworksMemoryDesc_" << tag << " -- invalid frequency " << prob;
         return ANEURALNETWORKS_BAD_DATA;
     }
 
     mRoles.emplace(&compilation, ioType, index);
     for (const auto& [preparedModel, type, ind] : roles) {
         uint32_t modelIndex = mDesc.preparedModels.add(preparedModel);
-        BufferRole role = {.modelIndex = modelIndex, .ioIndex = ind, .frequency = freq};
+        BufferRole role = {.modelIndex = modelIndex, .ioIndex = ind, .probability = prob};
         if (type == IOType::INPUT) {
             mDesc.inputRoles.push_back(role);
         } else {

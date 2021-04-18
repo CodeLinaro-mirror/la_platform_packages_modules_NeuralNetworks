@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,25 +14,20 @@
  * limitations under the License.
  */
 
-cc_library_static {
-    name: "neuralnetworks_supportlibrary",
-    srcs: [
-        "SupportLibrary.cpp",
-        "SupportLibraryWrapper.cpp",
-    ],
-    shared_libs: [
-        "libnativewindow",
-    ],
-    cflags: [
-        "-DNNTEST_COMPUTE_MODE",
-        "-DNNTEST_ONLY_PUBLIC_API",
-        "-DNNTEST_SLTS",
-        "-Wall",
-        "-Werror",
-    ],
-    vendor_available: true,
-    export_include_dirs: ["."],
-    include_dirs: [
-        "packages/modules/NeuralNetworks/runtime/include/",
-    ],
-}
+#ifndef ANDROID_FRAMEWORKS_ML_NN_COMMON_DYNAMIC_CL_DEPS_H
+#define ANDROID_FRAMEWORKS_ML_NN_COMMON_DYNAMIC_CL_DEPS_H
+
+#include <cstdint>
+
+namespace android::nn {
+
+struct CompatibilityLayerMemory {
+    int (*create)(const char* name, size_t size);
+    size_t (*getSize)(int fd);
+};
+
+const CompatibilityLayerMemory& loadCompatibilityLayerMemory();
+
+}  // namespace android::nn
+
+#endif  // ANDROID_FRAMEWORKS_ML_NN_COMMON_DYNAMIC_CL_DEPS_H

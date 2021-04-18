@@ -41,10 +41,6 @@ constexpr std::underlying_type_t<Type> underlyingType(Type object) {
     return static_cast<std::underlying_type_t<Type>>(object);
 }
 
-uint16_t getExtensionPrefix(uint32_t type) {
-    return static_cast<uint16_t>(type >> kExtensionTypeBits);
-}
-
 template <typename Type>
 std::ostream& operator<<(std::ostream& os, const std::vector<Type>& vec) {
     constexpr size_t kMaxVectorPrint = 20;
@@ -168,16 +164,19 @@ std::pair<int32_t, int32_t> getIntsFromOffset(size_t offset) {
     return std::make_pair(lowOffsetBits, highOffsetBits);
 }
 
-std::vector<uint32_t> countNumberOfConsumers(size_t numberOfOperands,
-                                             const std::vector<nn::Operation>& operations) {
+Result<std::vector<uint32_t>> countNumberOfConsumers(size_t numberOfOperands,
+                                                     const std::vector<nn::Operation>& operations) {
     std::vector<uint32_t> numberOfConsumers(numberOfOperands, 0);
-    auto eachOperandIndex = [&numberOfConsumers](uint32_t operandIndex) {
-        numberOfConsumers.at(operandIndex)++;
-    };
-    auto eachOperation = [&eachOperandIndex](const nn::Operation& operation) {
-        std::for_each(operation.inputs.begin(), operation.inputs.end(), eachOperandIndex);
-    };
-    std::for_each(operations.begin(), operations.end(), eachOperation);
+    for (const auto& operation : operations) {
+        for (uint32_t operandIndex : operation.inputs) {
+            if (operandIndex >= numberOfConsumers.size()) {
+                return NN_ERROR()
+                       << "countNumberOfConsumers: tried to access out-of-bounds operand ("
+                       << operandIndex << " vs " << numberOfConsumers.size() << ")";
+            }
+            numberOfConsumers[operandIndex]++;
+        }
+    }
     return numberOfConsumers;
 }
 
@@ -671,7 +670,7 @@ std::ostream& operator<<(std::ostream& os, const DataLocation& location) {
     os << "DataLocation{.pointer=";
     printPointer(location.pointer);
     return os << ", .poolIndex=" << location.poolIndex << ", .offset=" << location.offset
-              << ", .length=" << location.length << "}";
+              << ", .length=" << location.length << ", .padding=" << location.padding << "}";
 }
 
 std::ostream& operator<<(std::ostream& os,
@@ -774,7 +773,7 @@ std::ostream& operator<<(std::ostream& os, const BufferDesc& bufferDesc) {
 
 std::ostream& operator<<(std::ostream& os, const BufferRole& bufferRole) {
     return os << "BufferRole{.modelIndex=" << bufferRole.modelIndex
-              << ", .ioIndex=" << bufferRole.ioIndex << ", .frequency=" << bufferRole.frequency
+              << ", .ioIndex=" << bufferRole.ioIndex << ", .probability=" << bufferRole.probability
               << "}";
 }
 
@@ -941,7 +940,8 @@ bool operator!=(const Operand::SymmPerChannelQuantParams& a,
 
 static bool operator==(const DataLocation& a, const DataLocation& b) {
     constexpr auto toTuple = [](const DataLocation& location) {
-        return std::tie(location.pointer, location.poolIndex, location.offset, location.length);
+        return std::tie(location.pointer, location.poolIndex, location.offset, location.length,
+                        location.padding);
     };
     return toTuple(a) == toTuple(b);
 }
