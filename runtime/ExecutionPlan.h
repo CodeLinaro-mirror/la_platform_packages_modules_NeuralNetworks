@@ -692,9 +692,7 @@ class ExecutionPlan {
                  const std::vector<OutputShape>* mainModelOutputShapes) const;
 
     // Only legal to call when mState == SIMPLE.
-    // See the constructor of StepExecutor for the semantics of "reusable".
-    std::shared_ptr<StepExecutor> makeStepExecutor(bool reusable,
-                                                   ExecutionBuilder* executionBuilder) const;
+    std::shared_ptr<StepExecutor> makeStepExecutor(ExecutionBuilder* executionBuilder) const;
 
     ExecutionStep* createNewExecutionStep(uint32_t sourceModelIndex,
                                           const std::shared_ptr<Device> device);

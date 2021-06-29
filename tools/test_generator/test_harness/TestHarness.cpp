@@ -17,7 +17,7 @@
 #include "TestHarness.h"
 
 #include <android-base/logging.h>
-#include <gmock/gmock.h>
+#include <gmock/gmock-matchers.h>
 #include <gtest/gtest.h>
 
 #include <algorithm>

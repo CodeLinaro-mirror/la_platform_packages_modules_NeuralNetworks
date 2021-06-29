@@ -7,9 +7,6 @@
   "presubmit": [
     {
       "name": "NeuralNetworksTest_utils"
-    },
-    {
-      "name": "CtsNNAPIJavaTestCases"
     }
   ],
   "presubmit-large": [
