@@ -212,10 +212,20 @@ std::pair<size_t, std::vector<size_t>> getMemorySizes(const Model& model) {
     return std::make_pair(operandValuesSize, std::move(poolSizes));
 }
 
-uint32_t roundUp(uint32_t size, uint32_t multiple) {
+size_t roundUp(size_t size, size_t multiple) {
     CHECK(multiple != 0);
     CHECK((multiple & (multiple - 1)) == 0) << multiple << " is not a power of two";
     return (size + (multiple - 1)) & ~(multiple - 1);
+}
+
+size_t getAlignmentForLength(size_t length) {
+    if (length < 2) {
+        return 1;  // No alignment necessary
+    } else if (length < 4) {
+        return 2;  // Align on 2-byte boundary
+    } else {
+        return 4;  // Align on 4-byte boundary
+    }
 }
 
 std::ostream& operator<<(std::ostream& os, const DeviceStatus& deviceStatus) {
