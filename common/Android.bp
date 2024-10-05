@@ -99,7 +99,6 @@ cc_defaults {
         "cpu_operations/UnidirectionalSequenceRNN.cpp",
     ],
     tidy_disabled_srcs: tidy_disabled_common_operations_files,
-    sdclang: false,
 }
 
 // libneuralnetworks_common* provides common utilities for the NNAPI runtime, drivers, and tests to

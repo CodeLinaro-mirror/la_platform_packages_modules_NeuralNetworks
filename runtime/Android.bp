@@ -220,7 +220,6 @@ cc_library_shared {
         ],
         symbol_file: "libneuralnetworks.map.txt",
     },
-    sdclang: false,
 }
 
 // Required for tests (b/147158681)
