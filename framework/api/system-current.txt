@@ -1,8 +1,9 @@
 // Signature format: 2.0
 package android.app.ondeviceintelligence {
 
-  @FlaggedApi("android.app.ondeviceintelligence.flags.on_device_intelligence_26q2") public final class Content implements android.os.Parcelable {
+  @FlaggedApi("android.app.ondeviceintelligence.flags.on_device_intelligence_26q2") public final class Content implements java.lang.AutoCloseable android.os.Parcelable {
     ctor public Content(@NonNull java.util.List<android.app.ondeviceintelligence.Part>);
+    method public void close() throws java.io.IOException;
     method public int describeContents();
     method @NonNull public java.util.List<android.app.ondeviceintelligence.Part> getParts();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
@@ -149,7 +150,8 @@ package android.app.ondeviceintelligence {
     field public static final int MODEL_STATUS_UNAVAILABLE = 0; // 0x0
   }
 
-  @FlaggedApi("android.app.ondeviceintelligence.flags.on_device_intelligence_26q2") public final class Part implements android.os.Parcelable {
+  @FlaggedApi("android.app.ondeviceintelligence.flags.on_device_intelligence_26q2") public final class Part implements java.lang.AutoCloseable android.os.Parcelable {
+    method public void close() throws java.io.IOException;
     method @NonNull public static android.app.ondeviceintelligence.Part createBlob(@NonNull android.os.ParcelFileDescriptor, int);
     method @NonNull public static android.app.ondeviceintelligence.Part createImage(@NonNull android.graphics.Bitmap);
     method @NonNull public static android.app.ondeviceintelligence.Part createText(@NonNull String);
@@ -220,8 +222,9 @@ package android.app.ondeviceintelligence.embedding {
     field public static final int MODALITY_TEXT = 0; // 0x0
   }
 
-  @FlaggedApi("android.app.ondeviceintelligence.flags.on_device_intelligence_26q2") public final class EmbeddingRequest implements android.os.Parcelable {
+  @FlaggedApi("android.app.ondeviceintelligence.flags.on_device_intelligence_26q2") public final class EmbeddingRequest implements java.lang.AutoCloseable android.os.Parcelable {
     ctor public EmbeddingRequest(@NonNull java.util.List<android.app.ondeviceintelligence.Content>);
+    method public void close() throws java.io.IOException;
     method public int describeContents();
     method @NonNull public java.util.List<android.app.ondeviceintelligence.Content> getContent();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
@@ -270,9 +273,10 @@ package android.app.ondeviceintelligence.imagedescription {
     field @NonNull public static final android.os.Parcelable.Creator<android.app.ondeviceintelligence.imagedescription.ImageDescriptionModel> CREATOR;
   }
 
-  @FlaggedApi("android.app.ondeviceintelligence.flags.on_device_intelligence_26q2") public final class ImageDescriptionRequest implements android.os.Parcelable {
+  @FlaggedApi("android.app.ondeviceintelligence.flags.on_device_intelligence_26q2") public final class ImageDescriptionRequest implements java.lang.AutoCloseable android.os.Parcelable {
     ctor public ImageDescriptionRequest(@NonNull android.graphics.Bitmap, @Nullable String);
     ctor public ImageDescriptionRequest(@NonNull android.graphics.Bitmap, @Nullable String, @Nullable java.util.Locale);
+    method public void close() throws java.io.IOException;
     method public int describeContents();
     method @NonNull public android.app.ondeviceintelligence.Content getContent();
     method @Nullable public java.util.Locale getLocale();
